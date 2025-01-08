@@ -1,7 +1,6 @@
 #include <iostream>
 #include <windows.h>
 #include <tlhelp32.h>
-#include <psapi.h>
 #include <thread>
 #include <chrono>
 #include <atomic>
