@@ -1,5 +1,8 @@
 # Touhou penta Trainer
-a cheat trainer for touhou 1,2,3,4 and 5
+A cheat trainer for touhou 1,2,3,4 and 5
+
+## Download
+You can download the executable from [here](bin/Debug/Touhou%20Penta%20Trainer.exe)
 
 ## Usage
 1. The first step is downloading Neko project II emulator from [here](https://moriyashrine.org/files/file/387-pc-98-emulator-~-neko-project-ii/) if you use other emulators this trainer might not work.
