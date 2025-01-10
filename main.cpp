@@ -1,7 +1,6 @@
 #include <iostream>
 #include <windows.h>
 #include <tlhelp32.h>
-#include <thread>
 #include <chrono>
 #include <atomic>
 
@@ -60,14 +59,23 @@ void promptForValue(const char* name, int& value) {
         std::cout << name << " value unchanged." << std::endl;
     }
 }
+int getTypeSize(const char* name){ //return number of bytes required by these types
+    if(!strcmp("HP",name)||!strcmp("Bombs",name)){
+        return 1;}
+    if(!strcmp("Power",name)){
+        return 2;}
+    else {
+        return 4;}
 
+}
 bool writeValue(HANDLE hProcess, DWORD_PTR address, int value, const char* name) {
     if (value == -1) return true; // Skip writing if user chose not to change
     if(address== NULL){
       std::cout<<"Unsupported feature for this touhou version"<<std::endl;
       return true;
     }
-    if (!WriteProcessMemory(hProcess, (LPVOID)(address), &value, sizeof(value), NULL)) {
+    int typeSize= getTypeSize(name);
+    if (!WriteProcessMemory(hProcess, (LPVOID)(address), &value,typeSize, NULL)) {
         std::cerr << "Failed to write " << name << "." << std::endl;
         std::cerr<<"address: "<<std::hex<<address<<std::endl;
         return false;
@@ -76,16 +84,6 @@ bool writeValue(HANDLE hProcess, DWORD_PTR address, int value, const char* name)
     return true;
 }
 
-void updateProjectilesInLoop(HANDLE hProcess, DWORD_PTR projectilesAddress, int& projectiles, std::atomic<bool>& runLoop) {
-    while (runLoop) {
-        if (projectiles != -1) {
-            if (!WriteProcessMemory(hProcess, (LPVOID)(projectilesAddress), &projectiles, sizeof(projectiles), NULL)) {
-                std::cerr << "Failed to write Projectiles." << std::endl;
-            }
-        }
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-}
 
 int main() {
     const char* targetProcess = "np21nt.exe";
@@ -118,12 +116,10 @@ int main() {
 
     DWORD_PTR hpAddress[] = {baseAddress+0x4CD030,baseAddress + 0x4B893C,baseAddress+0x4C6DAD,baseAddress+0x51C33B,baseAddress+0x4BF610};
     DWORD_PTR bombsAddress[] = {baseAddress+0x4CCFE2,baseAddress + 0x4B893D,baseAddress+0x4C6DC3,baseAddress+0x51C33D,baseAddress+0x4BF611};
-    DWORD_PTR projectilesAddress[] = {NULL,baseAddress + 0x4BBC52,NULL};
+    DWORD_PTR PowerAddress[] = {NULL,baseAddress+0x4B88B6 ,NULL, baseAddress + 0x4B2074 ,baseAddress+0x4C717E };
     DWORD_PTR scoreAddress[] = {NULL,baseAddress + 0x4B8938,baseAddress+0x4C5364,baseAddress+0x4B1D5C,baseAddress+0x4C70C8};
 
-    int hp, bombs, projectiles = -1, score;
-    std::atomic<bool> runProjectilesLoop(false);
-    std::thread projectileThread;
+    int hp, bombs, power = -1, score;
 
     while (true) {
         // Prompt for values
@@ -131,41 +127,22 @@ int main() {
         promptForValue("HP", hp);
         promptForValue("Bombs", bombs);
         promptForValue("Score", score);
-        promptForValue("Projectiles (1-9)", projectiles);
-
-        // Stop the existing projectile thread if running
-        if (projectileThread.joinable()) {
-            runProjectilesLoop = false;
-            projectileThread.join();
-        }
-
-        // Start a new projectile thread if needed
-        if (projectiles != -1 && projectilesAddress[version]!=NULL) {
-            runProjectilesLoop = true;
-            projectileThread = std::thread(updateProjectilesInLoop, hProcess, projectilesAddress[version], std::ref(projectiles), std::ref(runProjectilesLoop));
-        }
+        promptForValue("Power", power);
 
         // Write the values
         writeValue(hProcess, hpAddress[version], hp, "HP");
         writeValue(hProcess, bombsAddress[version], bombs, "Bombs");
         writeValue(hProcess, scoreAddress[version], score, "Score");
+        writeValue(hProcess,PowerAddress[version],power,"Power");
 
         // Ask the user if they want to continue
         std::cout << "Do you want to re-enter values? (y/n): ";
         char choice;
         std::cin >> choice;
 
-        if (choice == 'n' || choice == 'N') {
-            runProjectilesLoop = false; // Stop the projectile loop
-            break;
-        }
         system("cls");//Clear screen
     }
 
-    // Wait for the projectile thread to finish before exiting
-    if (projectileThread.joinable()) {
-        projectileThread.join();
-    }
 
     CloseHandle(hProcess);
     std::cout << "Program terminated." << std::endl;

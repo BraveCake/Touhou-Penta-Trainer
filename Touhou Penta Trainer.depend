@@ -1,10 +1,8 @@
 # depslib dependency file v1.0
-1736304785 source:d:\codeblocks\touhou penta trainer\main.cpp
+1736469720 source:d:\codeblocks\touhou penta trainer\main.cpp
 	<iostream>
 	<windows.h>
 	<tlhelp32.h>
-	<psapi.h>
-	<thread>
 	<chrono>
 	<atomic>
 

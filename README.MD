@@ -11,4 +11,5 @@ You can download the executable from [here](bin/Debug/Touhou%20Penta%20Trainer.e
 
 ## Notes
 - Some features might not be supported in all touhou games the trainer will tell you explicitly they're not supported.
+- Maximum value of both HP and Bombs is 255. value of power value shouldn't exceed 64k and score can't be changed precisely in all versions.
 - Adjusting hp in Touhou 4 could cause losing ability to move this bug has been already reported and I might try to fix it later (No promises)
